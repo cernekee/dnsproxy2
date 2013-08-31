@@ -72,15 +72,24 @@ static void setup_listener(int do_wait)
     }
 
     sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (sockfd < 0)
+    if (sockfd < 0) {
         ALOGE("socket() failed (%s)\n", strerror(errno));
+        exit(1);
+    }
 
     memset(&sock, 0, sizeof(sock));
     sock.sun_family = AF_UNIX;
     strcpy(sock.sun_path, SOCKPATH);
 
-    if (bind(sockfd, (struct sockaddr *)&sock, sizeof(sock)) < 0)
+    if (bind(sockfd, (struct sockaddr *)&sock, sizeof(sock)) < 0) {
         ALOGE("can't bind (%s)\n", strerror(errno));
+        exit(1);
+    }
+
+    if (chmod(SOCKPATH, 0660) < 0) {
+        ALOGE("can't chmod (%s)\n", strerror(errno));
+        exit(1);
+    }
 
     sprintf(buf, "%d", sockfd);
     setenv("ANDROID_SOCKET_dnsproxyd", buf, 1);
@@ -121,7 +130,6 @@ int main(int argc, char **argv)
     if (!grp || setgid(grp->gr_gid)) {
         ALOGW("Unable to change to 'inet' group (%s)", strerror(errno));
     }
-    umask(0002);
 
     setenv("ANDROID_DNS_MODE", "local", 1);
 
