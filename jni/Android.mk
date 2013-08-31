@@ -9,6 +9,8 @@ LOCAL_SRC_FILES	:= dnsproxy2.cpp \
 	SocketListener.cpp \
 	SocketClient.cpp \
 	NetdCommand.cpp \
+	gethnamaddr.c \
+	getaddrinfo.c \
 	logd_write.c \
 	atomic.c \
 	resolv/__dn_comp.c \
