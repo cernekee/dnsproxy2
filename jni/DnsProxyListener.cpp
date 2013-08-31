@@ -40,6 +40,25 @@
 #include "DnsProxyListener.h"
 #include "ResponseCode.h"
 
+extern int dns_uid;
+
+static int do_setfsuid(SocketClient *s, const char *caller)
+{
+    int uid;
+
+    if (dns_uid == -1) {
+        uid = s->getUid();
+    } else {
+        uid = dns_uid;
+    }
+
+    if (syscall(__NR_setfsuid, uid) < 0) {
+        ALOGE("%s: setfsuid errno: %s\n", caller, strerror(errno));
+        return -1;
+    }
+    return 0;
+}
+
 DnsProxyListener::DnsProxyListener() :
                  FrameworkListener("dnsproxyd") {
     registerCmd(new GetAddrInfoCmd());
@@ -124,8 +143,7 @@ void DnsProxyListener::GetAddrInfoHandler::run() {
         ALOGD("GetAddrInfoHandler, now for %s / %s / %s", mHost, mService, mIface);
     }
 
-    if (syscall(__NR_setfsuid, mClient->getUid()) < 0) {
-        ALOGE("GetAddrInfoHandler::run setfsuid errno: %s\n", strerror(errno));
+    if (do_setfsuid(mClient, "GetAddrInfoHandler") < 0) {
         return;
     }
 
@@ -323,8 +341,7 @@ void DnsProxyListener::GetHostByNameHandler::run() {
         ALOGD("DnsProxyListener::GetHostByNameHandler::run\n");
     }
 
-    if (syscall(__NR_setfsuid, mClient->getUid()) < 0) {
-        ALOGE("GetHostByNameHandler::run setfsuid errno: %s\n", strerror(errno));
+    if (do_setfsuid(mClient, "GetHostByNameHandler") < 0) {
         return;
     }
 
@@ -457,8 +474,7 @@ void DnsProxyListener::GetHostByAddrHandler::run() {
         ALOGD("DnsProxyListener::GetHostByAddrHandler::run\n");
     }
 
-    if (syscall(__NR_setfsuid, mClient->getUid()) < 0) {
-        ALOGE("GetHostByAddrHandler::run setfsuid errno: %s\n", strerror(errno));
+    if (do_setfsuid(mClient, "GetHostByAddrHandler") < 0) {
         return;
     }
 

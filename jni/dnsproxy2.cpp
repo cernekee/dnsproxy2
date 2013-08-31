@@ -34,6 +34,9 @@
 
 #define SOCKPATH        "/dev/socket/dnsproxyd"
 
+/* default: assume the UID of the caller */
+int dns_uid = -1;
+
 static int restore_oldsock;
 
 static void handle_signal(int sig)
@@ -103,7 +106,7 @@ static void setup_listener(int do_wait)
 
 static void usage(void)
 {
-    puts("usage: dnsproxy2 [ -w ] [ -v ]");
+    puts("usage: dnsproxy2 [ -w ] [ -v ] [ -u <uid> ]");
     exit(1);
 }
 
@@ -112,13 +115,16 @@ int main(int argc, char **argv)
     int do_wait = 0, val;
     struct group *grp;
 
-    while ((val = getopt(argc, argv, "hwv")) != -1) {
+    while ((val = getopt(argc, argv, "hwvu:")) != -1) {
         switch (val) {
         case 'w':
             do_wait = 1;
             break;
         case 'v':
             setenv("RES_OPTIONS", "debug", 1);
+            break;
+        case 'u':
+            dns_uid = atoi(optarg);
             break;
         case 'h':
         default:
