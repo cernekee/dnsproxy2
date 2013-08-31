@@ -15,6 +15,7 @@ LOCAL_SRC_FILES	:= dnsproxy2.cpp \
 	getservbyname.c \
 	getservbyport.c \
 	getservent.c \
+	nsdispatch.c \
 	logd_write.c \
 	atomic.c \
 	resolv/__dn_comp.c \
@@ -31,11 +32,18 @@ LOCAL_SRC_FILES	:= dnsproxy2.cpp \
 	resolv/__res_send.c \
 	resolv/res_send.c \
 	resolv/res_state.c \
-	resolv/libc_logging.cpp
+	resolv/libc_logging.cpp \
+	nameser/ns_name.c \
+	nameser/ns_netint.c \
+	nameser/ns_parse.c \
+	nameser/ns_print.c \
+	nameser/ns_samedomain.c \
+	nameser/ns_ttl.c
 
 LOCAL_CFLAGS	:= -DHAVE_SYS_UIO_H \
 	-DANDROID_SMP=1 \
 	-DANDROID_CHANGES \
+	-D_LIBC \
 	-I$(LOCAL_PATH) \
 	-I$(LOCAL_PATH)/resolv \
 	-I$(LOCAL_PATH)/private \
