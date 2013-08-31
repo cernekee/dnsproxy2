@@ -11,6 +11,10 @@ LOCAL_SRC_FILES	:= dnsproxy2.cpp \
 	NetdCommand.cpp \
 	gethnamaddr.c \
 	getaddrinfo.c \
+	getnameinfo.c \
+	getservbyname.c \
+	getservbyport.c \
+	getservent.c \
 	logd_write.c \
 	atomic.c \
 	resolv/__dn_comp.c \
