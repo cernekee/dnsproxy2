@@ -16,6 +16,7 @@
  */
 
 #include <errno.h>
+#include <grp.h>
 #include <signal.h>
 #include <string.h>
 #include <stdarg.h>
@@ -100,6 +101,7 @@ static void usage(void)
 int main(int argc, char **argv)
 {
     int do_wait = 0, val;
+    struct group *grp;
 
     while ((val = getopt(argc, argv, "hwv")) != -1) {
         switch (val) {
@@ -114,6 +116,12 @@ int main(int argc, char **argv)
             usage();
         }
     }
+
+    grp = getgrnam("inet");
+    if (!grp || setgid(grp->gr_gid)) {
+        ALOGW("Unable to change to 'inet' group (%s)", strerror(errno));
+    }
+    umask(0002);
 
     setenv("ANDROID_DNS_MODE", "local", 1);
 
