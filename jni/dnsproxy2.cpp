@@ -16,6 +16,7 @@
  */
 
 #include <errno.h>
+#include <signal.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -32,6 +33,16 @@
 #define SOCKPATH        "/dev/socket/dnsproxyd"
 
 static int restore_oldsock;
+
+static void handle_signal(int sig)
+{
+    if (restore_oldsock) {
+        /* re-enable the old proxy, then exit */
+        unlink(SOCKPATH);
+        rename(SOCKPATH ".bak", SOCKPATH);
+    }
+    exit(0);
+}
 
 static void setup_resolver(const char *server)
 {
@@ -77,6 +88,10 @@ static void setup_listener(void)
 int main(int argc, char **argv)
 {
     setenv("ANDROID_DNS_MODE", "local", 1);
+
+    signal(SIGTERM, handle_signal);
+    signal(SIGINT, handle_signal);
+    signal(SIGHUP, handle_signal);
 
     if (argc >= 2)
         setup_resolver(argv[1]);
