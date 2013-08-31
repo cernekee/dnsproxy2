@@ -24,13 +24,15 @@ LOCAL_SRC_FILES	:= dnsproxy2.cpp \
 	resolv/res_query.c \
 	resolv/__res_send.c \
 	resolv/res_send.c \
-	resolv/res_state.c
+	resolv/res_state.c \
+	resolv/libc_logging.cpp
 
 LOCAL_CFLAGS	:= -DHAVE_SYS_UIO_H \
 	-DANDROID_SMP=1 \
 	-DANDROID_CHANGES \
 	-I$(LOCAL_PATH) \
 	-I$(LOCAL_PATH)/resolv \
+	-I$(LOCAL_PATH)/private \
 	-include netdb-private.h
 
 include $(BUILD_EXECUTABLE)
