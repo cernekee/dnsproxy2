@@ -877,7 +877,7 @@ android_gethostbyaddrforiface(const void *addr, socklen_t len, int af, const cha
 }
 
 struct hostent *
-gethostbyaddr(const void *addr, socklen_t len, int af)
+__gethostbyaddr(const void *addr, socklen_t len, int af)
 {
 	return android_gethostbyaddrforiface(addr, len, af, NULL);
 }
