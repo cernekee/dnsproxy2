@@ -21,6 +21,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -50,13 +51,18 @@ static void setup_resolver(const char *server)
     _resolv_set_nameservers_for_iface("eth0", (char **)&server, 1, "");
 }
 
-static void setup_listener(void)
+static void setup_listener(int do_wait)
 {
     int sockfd;
     struct sockaddr_un sock;
     struct stat statbuf;
     char buf[16];
     DnsProxyListener *dpl;
+
+    /* wait for netd to start up, then take over its socket */
+    while (do_wait && stat(SOCKPATH, &statbuf) < 0) {
+        sleep(1);
+    }
 
     if (stat(SOCKPATH, &statbuf) == 0) {
         unlink(SOCKPATH ".bak");
@@ -85,20 +91,42 @@ static void setup_listener(void)
     }
 }
 
+static void usage(void)
+{
+    puts("usage: dnsproxy2 [ -w ] [ -v ]");
+    exit(1);
+}
+
 int main(int argc, char **argv)
 {
+    int do_wait = 0, val;
+
+    while ((val = getopt(argc, argv, "hwv")) != -1) {
+        switch (val) {
+        case 'w':
+            do_wait = 1;
+            break;
+        case 'v':
+            setenv("RES_OPTIONS", "debug", 1);
+            break;
+        case 'h':
+        default:
+            usage();
+        }
+    }
+
     setenv("ANDROID_DNS_MODE", "local", 1);
 
     signal(SIGTERM, handle_signal);
     signal(SIGINT, handle_signal);
     signal(SIGHUP, handle_signal);
 
-    if (argc >= 2)
-        setup_resolver(argv[1]);
+    if (optind < argc)
+        setup_resolver(argv[optind]);
     else
         setup_resolver("8.8.8.8");
 
-    setup_listener();
+    setup_listener(do_wait);
 
     while(1) {
         sleep(1000);
