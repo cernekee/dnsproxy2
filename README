@@ -1,0 +1,34 @@
+dnsproxy2 - a replacement DNS proxy for Android 4.3+
+
+This currently allows the user to manually override the DNS server IP,
+and it sets the correct UID on outbound requests so they can be filtered
+via iptables / AFWall+ / DroidWall / etc.
+
+
+Requirements:
+
+Root access
+
+Write access to /system
+
+/etc/init.d (if you want to start it on boot)
+
+
+Build instructions:
+
+1) Install NDK r8e under /opt/android-ndk
+
+2) Run /opt/android-ndk/ndk-build
+
+3) Binaries are under libs/.  Most devices will use libs/armeabi-v7a/
+
+
+Installation instructions:
+
+Make sure adb is in your PATH and functional, then on your PC host run:
+
+bash misc/install.sh
+
+This installs /system/xbin/dnsproxy2 and /etc/init.d/20dnsproxy2
+
+To uninstall, remount /system read-write and delete those files.
