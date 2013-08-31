@@ -173,7 +173,7 @@ int DnsProxyListener::GetAddrInfoCmd::runCommand(SocketClient *cli,
             ALOGD("argv[%i]=%s", i, argv[i]);
         }
     }
-    if (argc != 8) {
+    if (argc != 7 && argc != 8) {
         char* msg = NULL;
         asprintf( &msg, "Invalid number of arguments to getaddrinfo: %i", argc);
         ALOGW("%s", msg);
@@ -196,11 +196,14 @@ int DnsProxyListener::GetAddrInfoCmd::runCommand(SocketClient *cli,
         service = strdup(service);
     }
 
-    char* iface = argv[7];
-    if (strcmp(iface, "^") == 0) {
-        iface = NULL;
-    } else {
-        iface = strdup(iface);
+    char* iface = NULL;
+    if (argc > 7) {
+        iface = argv[7];
+        if (strcmp(iface, "^") == 0) {
+            iface = NULL;
+        } else {
+            iface = strdup(iface);
+        }
     }
 
     struct addrinfo* hints = NULL;
@@ -370,7 +373,7 @@ int DnsProxyListener::GetHostByAddrCmd::runCommand(SocketClient *cli,
             ALOGD("argv[%i]=%s", i, argv[i]);
         }
     }
-    if (argc != 5) {
+    if (argc != 4 && argc != 5) {
         char* msg = NULL;
         asprintf(&msg, "Invalid number of arguments to gethostbyaddr: %i", argc);
         ALOGW("%s", msg);
@@ -383,12 +386,15 @@ int DnsProxyListener::GetHostByAddrCmd::runCommand(SocketClient *cli,
     int addrLen = atoi(argv[2]);
     int addrFamily = atoi(argv[3]);
     pid_t pid = cli->getPid();
-    char* iface = argv[4];
 
-    if (strcmp(iface, "^") == 0) {
-        iface = NULL;
-    } else {
-        iface = strdup(iface);
+    char* iface = NULL;
+    if (argc > 4) {
+        iface = argv[4];
+        if (strcmp(iface, "^") == 0) {
+            iface = NULL;
+        } else {
+            iface = strdup(iface);
+        }
     }
 
     void* addr = malloc(sizeof(struct in6_addr));
