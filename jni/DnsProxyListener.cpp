@@ -27,6 +27,8 @@
 #include <pthread.h>
 #include <resolv_iface.h>
 #include <net/if.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
 #define LOG_TAG "DnsProxyListener"
 #define DBG 0
@@ -120,6 +122,11 @@ static bool sendhostent(SocketClient *c, struct hostent *hp) {
 void DnsProxyListener::GetAddrInfoHandler::run() {
     if (DBG) {
         ALOGD("GetAddrInfoHandler, now for %s / %s / %s", mHost, mService, mIface);
+    }
+
+    if (syscall(__NR_setfsuid, mClient->getUid()) < 0) {
+        ALOGE("GetAddrInfoHandler::run setfsuid errno: %s\n", strerror(errno));
+        return;
     }
 
     char tmp[IF_NAMESIZE + 1];
@@ -313,6 +320,11 @@ void DnsProxyListener::GetHostByNameHandler::run() {
         ALOGD("DnsProxyListener::GetHostByNameHandler::run\n");
     }
 
+    if (syscall(__NR_setfsuid, mClient->getUid()) < 0) {
+        ALOGE("GetHostByNameHandler::run setfsuid errno: %s\n", strerror(errno));
+        return;
+    }
+
     char iface[IF_NAMESIZE + 1];
     if (mIface == NULL) {
         _resolv_get_pids_associated_interface(mPid, iface, sizeof(iface));
@@ -437,6 +449,11 @@ void* DnsProxyListener::GetHostByAddrHandler::threadStart(void* obj) {
 void DnsProxyListener::GetHostByAddrHandler::run() {
     if (DBG) {
         ALOGD("DnsProxyListener::GetHostByAddrHandler::run\n");
+    }
+
+    if (syscall(__NR_setfsuid, mClient->getUid()) < 0) {
+        ALOGE("GetHostByAddrHandler::run setfsuid errno: %s\n", strerror(errno));
+        return;
     }
 
     char tmp[IF_NAMESIZE + 1];
