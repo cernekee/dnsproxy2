@@ -23,9 +23,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <cutils/log.h>
 
@@ -106,7 +109,7 @@ static void setup_listener(int do_wait)
 
 static void usage(void)
 {
-    puts("usage: dnsproxy2 [ -w ] [ -v ] [ -u <uid> ]");
+    puts("usage: dnsproxy2 [ -w ] [ -v ] [ -u <uid> ] [ -l <hostname> ]");
     exit(1);
 }
 
@@ -114,8 +117,9 @@ int main(int argc, char **argv)
 {
     int do_wait = 0, val;
     struct group *grp;
+    char *lookup_host = NULL;
 
-    while ((val = getopt(argc, argv, "hwvu:")) != -1) {
+    while ((val = getopt(argc, argv, "hwvu:l:")) != -1) {
         switch (val) {
         case 'w':
             do_wait = 1;
@@ -125,6 +129,9 @@ int main(int argc, char **argv)
             break;
         case 'u':
             dns_uid = atoi(optarg);
+            break;
+        case 'l':
+            lookup_host = optarg;
             break;
         case 'h':
         default:
@@ -147,6 +154,17 @@ int main(int argc, char **argv)
         setup_resolver(argv[optind]);
     else
         setup_resolver("8.8.8.8");
+
+    if (lookup_host) {
+        /* perform one lookup and then exit */
+        struct hostent *hp = gethostbyname2(lookup_host, AF_INET);
+        if (hp && hp->h_length) {
+            struct in_addr **addr_list = (struct in_addr **)hp->h_addr_list;
+            puts(inet_ntoa(*addr_list[0]));
+            return 0;
+        }
+        return 1;
+    }
 
     setup_listener(do_wait);
 
